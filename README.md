@@ -1,20 +1,37 @@
-# 02_03 CI for JavaScript
+# 02_04 CI for Python
 
-Check node versions in the matrix strategy.
+# Permissions for Checks
+Permissions are needed to update the Actions interface.  Permissions can be added under the `job` section for a specific job, or at the top of a workflow so all jobs assume the permission.
 
-Update the matrix according to the versions needed for your project and the active versions as reported by [Node.js Release Working Group](https://github.com/nodejs/Release).
+    jobs:
+        build:
+            runs-on: ubuntu-latest
+            permissions:
+                checks: write
 
-For example, change:
+# JUnit Reporting
+Tests can be updated to include JUnit reports.
 
-    strategy:
-      matrix:
-        node-version: [14.x, 16.x, 18.x]
+Actions can be added to publish JUnit reports to the Actions user interface.
+
+For example, a standard call to `pytest` can be modified from:
+
+    - name: Test with pytest
+      run: |
+        pytest
 
 to:
 
 
-    strategy:
-      matrix:
-        node-version: [16.x, 18.x, 19.x]
+    - name: Test with pytest
+      run: |
+        python -m pytest --verbose --junit-xml=junit.xml
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v3
+      if: success() || failure() # always run even if the previous step fails
+      with:
+        report_paths: '**/junit.xml'
+        detailed_summary: true
+        include_passed: true
 
-
+A complete workflow is located here: [./python-ci-workflow.yml](./python-ci-workflow.yml)
